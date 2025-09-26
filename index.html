@@ -156,6 +156,16 @@
             margin-bottom: 5px;
         }
         
+        .youtube-badge {
+            display: inline-block;
+            background-color: #ff0000;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
         .json-output {
             background-color: #f5f5f5;
             border: 1px solid #ddd;
@@ -418,6 +428,14 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="youtubeUrl">URL de YouTube (opcional):</label>
+                        <input type="url" id="youtubeUrl" placeholder="https://youtube.com/watch?v=ABCD1234">
+                        <div class="url-help">
+                            Ejemplo: https://youtube.com/watch?v=ABCD1234 o https://youtu.be/ABCD1234
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
                         <label>Icono:</label>
                         <div class="icon-options" id="icon-options">
                             <span class="icon-option" data-icon="📺">📺</span>
@@ -489,6 +507,7 @@
             document.getElementById('category').value = presentation.category;
             document.getElementById('url').value = presentation.url;
             document.getElementById('embedUrl').value = presentation.embedUrl || '';
+            document.getElementById('youtubeUrl').value = presentation.youtubeUrl || '';
             document.getElementById('icon').value = presentation.icon;
             document.getElementById('date').value = presentation.date;
             
@@ -986,7 +1005,6 @@
             }, 5000);
         }
 
-        // [Resto de las funciones se mantienen igual...]
         // Agregar una nueva presentación
         function addPresentation() {
             const title = document.getElementById('title').value;
@@ -994,6 +1012,7 @@
             const category = document.getElementById('category').value;
             const url = document.getElementById('url').value;
             const embedUrl = document.getElementById('embedUrl').value;
+            const youtubeUrl = document.getElementById('youtubeUrl').value;
             let icon = document.getElementById('icon').value;
             const date = document.getElementById('date').value;
             
@@ -1018,7 +1037,8 @@
                 description: description,
                 category: category,
                 url: url,
-                embedUrl: embedUrl || url,
+                embedUrl: embedUrl || '',
+                youtubeUrl: youtubeUrl || '',
                 icon: icon,
                 date: date
             };
@@ -1044,6 +1064,7 @@
             const category = document.getElementById('category').value;
             const url = document.getElementById('url').value;
             const embedUrl = document.getElementById('embedUrl').value;
+            const youtubeUrl = document.getElementById('youtubeUrl').value;
             let icon = document.getElementById('icon').value;
             const date = document.getElementById('date').value;
             
@@ -1063,7 +1084,8 @@
                 description: description,
                 category: category,
                 url: url,
-                embedUrl: embedUrl || url,
+                embedUrl: embedUrl || '',
+                youtubeUrl: youtubeUrl || '',
                 icon: icon,
                 date: date
             };
@@ -1101,13 +1123,17 @@
             const sortedPresentations = [...presentations].sort((a, b) => new Date(b.date) - new Date(a.date));
             
             sortedPresentations.forEach(presentation => {
+                const hasYouTube = presentation.youtubeUrl && presentation.youtubeUrl.trim() !== '';
                 const presentationElement = document.createElement('div');
                 presentationElement.className = 'presentation-item';
                 presentationElement.innerHTML = `
-                    <h3>${presentation.icon} ${presentation.title}</h3>
+                    <h3>${presentation.icon} ${presentation.title} 
+                        ${hasYouTube ? '<span class="youtube-badge">YouTube</span>' : ''}
+                    </h3>
                     <p><strong>Descripción:</strong> ${presentation.description}</p>
                     <p><strong>Categoría:</strong> ${presentation.category}</p>
                     <p><strong>Fecha:</strong> ${presentation.date}</p>
+                    ${hasYouTube ? `<p><strong>YouTube:</strong> ${presentation.youtubeUrl}</p>` : ''}
                     <div style="margin-top: 10px;">
                         <button class="btn btn-warning" onclick="editPresentation(${presentation.id})">Editar</button>
                         <button class="btn btn-danger" onclick="deletePresentation(${presentation.id})">Eliminar</button>
