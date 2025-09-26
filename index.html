@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Presentaciones - AppServerMV</title>
+    <title>Editor de Presentaciones JSON</title>
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -226,6 +226,7 @@
             padding: 15px;
             border-radius: var(--border-radius);
             margin-top: 15px;
+            display: none;
         }
         
         .auto-config {
@@ -233,13 +234,7 @@
             border-left: 4px solid var(--primary-color);
             padding: 15px;
             margin-bottom: 20px;
-        }
-        
-        .token-guide {
-            background-color: #fff3cd;
-            border-left: 4px solid var(--warning-color);
-            padding: 15px;
-            margin-bottom: 20px;
+            display: none;
         }
         
         .file-upload-section {
@@ -293,6 +288,12 @@
             display: block;
         }
         
+        .url-help {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -318,57 +319,48 @@
 <body>
     <div class="container">
         <header>
-            <h1>Editor de Presentaciones - AppServerMV</h1>
-            <p>Gestiona tus presentaciones directamente en GitHub</p>
+            <h1>Editor de Presentaciones JSON</h1>
+            <p>Gestiona tus archivos JSON de presentaciones en GitHub</p>
         </header>
-        
-        <div class="auto-config">
-            <h3>✅ Configuración Automática Detectada</h3>
-            <p><strong>Repositorio:</strong> AppServerMV/proyectos-app</p>
-            <p><strong>Archivo:</strong> presentations.json</p>
-            <p>¡Solo necesitas ingresar tu token de GitHub!</p>
-        </div>
-        
-        <div class="token-guide">
-            <h3>🔑 Guía Rápida para el Token de GitHub</h3>
-            <p><strong>Pasos para crear el token correctamente:</strong></p>
-            <ol>
-                <li>Ve a <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings > Tokens</a></li>
-                <li>Haz clic en <strong>"Generate new token"</strong> → <strong>"Generate new token (classic)"</strong></li>
-                <li>Selecciona estos permisos:
-                    <ul>
-                        <li>✅ <strong>repo</strong> (todo)</li>
-                        <li>✅ <strong>workflow</strong> (opcional)</li>
-                    </ul>
-                </li>
-                <li>Genera el token y cópialo</li>
-            </ol>
+
+        <div class="auto-config" id="auto-config">
+            <h3>✅ Configuración Detectada</h3>
+            <p><strong>Repositorio:</strong> <span id="detected-repo">...</span></p>
+            <p><strong>Archivo:</strong> <span id="detected-file">...</span></p>
         </div>
 
         <div class="tab-container">
             <div class="tabs">
                 <div class="tab active" data-tab="github">Conexión GitHub</div>
                 <div class="tab" data-tab="upload">Cargar Archivo JSON</div>
-                <div class="tab" data-tab="publish">Publicar en Línea</div>
             </div>
             
             <div class="tab-content active" id="github-tab">
                 <section class="github-auth-section">
                     <h2>Conexión con GitHub</h2>
+                    
+                    <div class="form-group">
+                        <label for="github-url">URL del archivo JSON en GitHub:</label>
+                        <input type="url" id="github-url" placeholder="https://github.com/usuario/repo/blob/main/archivo.json">
+                        <div class="url-help">
+                            Ejemplo: https://github.com/miusuario/mirepo/blob/main/presentations.json
+                        </div>
+                        <button class="btn btn-info" id="parse-url" style="margin-top: 10px;">Detectar Configuración</button>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="github-token">Token de acceso personal de GitHub:</label>
                         <input type="password" id="github-token" placeholder="ghp_tuTokenDeGitHub">
                         <div class="token-info">
-                            <strong>Importante:</strong> El token debe tener permisos de <strong>repo</strong>.
-                            <a href="https://github.com/settings/tokens" target="_blank">Crear token aquí</a>
+                            <a href="https://github.com/settings/tokens" target="_blank">Crear token aquí (necesitas permisos "repo")</a>
                         </div>
                     </div>
                     
-                    <div class="repo-details">
-                        <h3>Configuración del Repositorio</h3>
-                        <p><strong>Propietario:</strong> AppServerMV</p>
-                        <p><strong>Repositorio:</strong> proyectos-app</p>
-                        <p><strong>Archivo:</strong> presentations.json</p>
+                    <div class="repo-details" id="repo-details">
+                        <h3>Configuración Detectada</h3>
+                        <p><strong>Propietario:</strong> <span id="repo-owner">...</span></p>
+                        <p><strong>Repositorio:</strong> <span id="repo-name">...</span></p>
+                        <p><strong>Archivo:</strong> <span id="repo-file">...</span></p>
                         <p><strong>Estado:</strong> <span id="connection-status">Desconectado</span></p>
                         <p><strong>SHA actual:</strong> <span id="file-sha">No cargado</span></p>
                         
@@ -388,30 +380,6 @@
                     <input type="file" id="file-input" accept=".json" style="display: none;">
                     <button class="btn btn-info" id="select-file">Seleccionar Archivo</button>
                     <div id="file-info" style="margin-top: 10px;"></div>
-                </section>
-            </div>
-            
-            <div class="tab-content" id="publish-tab">
-                <section class="github-auth-section">
-                    <h2>🌐 Publicar en GitHub Pages</h2>
-                    <p>Para publicar esta interfaz en línea usando GitHub Pages:</p>
-                    
-                    <div class="form-group">
-                        <h4>📋 Pasos para Publicar:</h4>
-                        <ol>
-                            <li>Guarda este código como <code>index.html</code> en tu repositorio</li>
-                            <li>Ve a la configuración de tu repositorio en GitHub</li>
-                            <li>En la sección "Pages", selecciona la rama <code>main</code> o <code>gh-pages</code></li>
-                            <li>Guarda los cambios</li>
-                            <li>Tu sitio estará disponible en: <code>https://appservermv.github.io/proyectos-app</code></li>
-                        </ol>
-                    </div>
-                    
-                    <div class="form-group">
-                        <h4>🚀 Enlace Directo a tu Sitio:</h4>
-                        <p id="site-url">https://appservermv.github.io/proyectos-app</p>
-                        <button class="btn btn-success" id="open-site">Abrir Sitio Web</button>
-                    </div>
                 </section>
             </div>
         </div>
@@ -503,13 +471,10 @@
         let currentEditId = null;
         let githubToken = '';
         let currentFileSha = '';
-
-        // Configuración fija basada en tu URL
-        const CONFIG = {
-            owner: 'AppServerMV',
-            repo: 'proyectos-app',
-            filePath: 'presentations.json',
-            siteUrl: 'https://appservermv.github.io/proyectos-app'
+        let CONFIG = {
+            owner: '',
+            repo: '',
+            filePath: ''
         };
 
         // Hacer las funciones globales para que los botones puedan acceder a ellas
@@ -577,6 +542,9 @@
             // Configurar eventos de archivos
             setupFileUpload();
             
+            // Configurar el botón de parsear URL
+            document.getElementById('parse-url').addEventListener('click', parseGitHubUrl);
+            
             // Configurar el botón de cargar desde GitHub
             document.getElementById('load-from-github').addEventListener('click', loadFromGitHub);
             
@@ -598,17 +566,58 @@
             // Configurar el botón de cancelar edición
             document.getElementById('cancel-edit').addEventListener('click', cancelEdit);
             
-            // Configurar el botón de abrir sitio
-            document.getElementById('open-site').addEventListener('click', function() {
-                window.open(CONFIG.siteUrl, '_blank');
-            });
-            
-            // Intentar cargar token desde localStorage
-            loadSavedToken();
-            
-            // Mostrar URL del sitio
-            document.getElementById('site-url').textContent = CONFIG.siteUrl;
+            // Intentar cargar configuración desde localStorage
+            loadSavedConfig();
         });
+
+        // Parsear URL de GitHub
+        function parseGitHubUrl() {
+            const url = document.getElementById('github-url').value.trim();
+            
+            if (!url) {
+                showStatus('Por favor, ingresa una URL de GitHub', 'error');
+                return;
+            }
+            
+            try {
+                // Patrón para URLs de GitHub
+                const pattern = /https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)/;
+                const match = url.match(pattern);
+                
+                if (!match) {
+                    throw new Error('URL de GitHub no válida. Debe ser: https://github.com/usuario/repo/blob/rama/archivo.json');
+                }
+                
+                const [, owner, repo, branch, filePath] = match;
+                
+                // Actualizar configuración
+                CONFIG = {
+                    owner: owner,
+                    repo: repo,
+                    filePath: filePath,
+                    branch: branch
+                };
+                
+                // Mostrar detalles detectados
+                document.getElementById('repo-owner').textContent = owner;
+                document.getElementById('repo-name').textContent = repo;
+                document.getElementById('repo-file').textContent = filePath;
+                document.getElementById('repo-details').style.display = 'block';
+                
+                // Mostrar configuración automática
+                document.getElementById('detected-repo').textContent = `${owner}/${repo}`;
+                document.getElementById('detected-file').textContent = filePath;
+                document.getElementById('auto-config').style.display = 'block';
+                
+                // Guardar configuración
+                saveConfig();
+                
+                showStatus(`✅ Configuración detectada: ${owner}/${repo}/${filePath}`, 'success');
+                
+            } catch (error) {
+                showStatus(`Error al parsear URL: ${error.message}`, 'error');
+            }
+        }
 
         // Configurar pestañas
         function setupTabs() {
@@ -705,12 +714,52 @@
             reader.readAsText(file);
         }
 
+        // Cargar configuración guardada
+        function loadSavedConfig() {
+            const savedConfig = localStorage.getItem('githubConfig');
+            const savedToken = localStorage.getItem('githubToken');
+            const savedUrl = localStorage.getItem('githubUrl');
+            
+            if (savedConfig) {
+                CONFIG = JSON.parse(savedConfig);
+                document.getElementById('repo-owner').textContent = CONFIG.owner;
+                document.getElementById('repo-name').textContent = CONFIG.repo;
+                document.getElementById('repo-file').textContent = CONFIG.filePath;
+                document.getElementById('repo-details').style.display = 'block';
+                
+                document.getElementById('detected-repo').textContent = `${CONFIG.owner}/${CONFIG.repo}`;
+                document.getElementById('detected-file').textContent = CONFIG.filePath;
+                document.getElementById('auto-config').style.display = 'block';
+            }
+            
+            if (savedUrl) {
+                document.getElementById('github-url').value = savedUrl;
+            }
+            
+            if (savedToken) {
+                document.getElementById('github-token').value = savedToken;
+                githubToken = savedToken;
+            }
+        }
+
+        // Guardar configuración
+        function saveConfig() {
+            localStorage.setItem('githubConfig', JSON.stringify(CONFIG));
+            localStorage.setItem('githubUrl', document.getElementById('github-url').value);
+            localStorage.setItem('githubToken', githubToken);
+        }
+
         // Probar conexión con GitHub
         async function testConnection() {
             githubToken = document.getElementById('github-token').value;
             
             if (!githubToken) {
                 showStatus('Por favor, ingresa tu token de GitHub', 'error');
+                return;
+            }
+            
+            if (!CONFIG.owner || !CONFIG.repo) {
+                showStatus('Primero detecta la configuración desde la URL', 'error');
                 return;
             }
             
@@ -729,12 +778,7 @@
                     if (repoResponse.status === 404) {
                         throw new Error('Repositorio no encontrado. Verifica que el repositorio exista y sea público.');
                     } else if (repoResponse.status === 403) {
-                        const rateLimit = repoResponse.headers.get('X-RateLimit-Remaining');
-                        if (rateLimit === '0') {
-                            throw new Error('Límite de API excedido. Espera unos minutos o usa un token diferente.');
-                        } else {
-                            throw new Error('Token sin permisos suficientes. Asegúrate de que el token tenga permisos "repo".');
-                        }
+                        throw new Error('Token sin permisos suficientes. Asegúrate de que el token tenga permisos "repo".');
                     } else if (repoResponse.status === 401) {
                         throw new Error('Token inválido o expirado. Genera un nuevo token.');
                     } else {
@@ -753,20 +797,6 @@
                 document.getElementById('connection-status').style.color = 'red';
                 showStatus(`❌ Error de conexión: ${error.message}`, 'error');
             }
-        }
-
-        // Cargar token guardado
-        function loadSavedToken() {
-            const savedToken = localStorage.getItem('githubToken');
-            if (savedToken) {
-                document.getElementById('github-token').value = savedToken;
-                githubToken = savedToken;
-            }
-        }
-
-        // Guardar token
-        function saveToken() {
-            localStorage.setItem('githubToken', githubToken);
         }
 
         // Configurar la selección de iconos
@@ -793,11 +823,16 @@
                 return;
             }
             
+            if (!CONFIG.owner || !CONFIG.repo) {
+                showStatus('Primero detecta la configuración desde la URL', 'error');
+                return;
+            }
+            
             try {
                 showStatus('Cargando archivo desde GitHub...', 'success');
                 
-                // Guardar el token
-                saveToken();
+                // Guardar la configuración
+                saveConfig();
                 
                 // Obtener el contenido del archivo
                 const fileResponse = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.filePath}`, {
@@ -858,11 +893,16 @@
                 return;
             }
             
+            if (!CONFIG.owner || !CONFIG.repo) {
+                showStatus('Primero detecta la configuración desde la URL', 'error');
+                return;
+            }
+            
             try {
                 showStatus('Guardando en GitHub...', 'success');
                 
-                // Guardar el token
-                saveToken();
+                // Guardar la configuración
+                saveConfig();
                 
                 // Crear el contenido del JSON
                 const jsonData = {
@@ -941,12 +981,9 @@
             statusMessage.classList.add(`status-${type}`);
             statusMessage.style.display = 'block';
             
-            // Ocultar después de 5 segundos (excepto errores importantes)
-            if (type !== 'error' || !message.includes('permisos')) {
-                setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 5000);
-            }
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
         }
 
         // [Resto de las funciones se mantienen igual...]
